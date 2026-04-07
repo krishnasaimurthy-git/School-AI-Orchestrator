@@ -39,3 +39,37 @@ function processScan() {
   enhance(canvas);
   document.getElementById("status").innerText = "Processed";
 }
+
+let stream;
+
+async function startCamera() {
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: "environment" }
+    });
+
+    document.getElementById("camera").srcObject = stream;
+  } catch (err) {
+    alert("Camera not working: " + err.message);
+  }
+}
+
+function capture() {
+  const video = document.getElementById("camera");
+  const canvas = document.createElement("canvas");
+
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(video, 0, 0);
+
+  const img = canvas.toDataURL("image/jpeg");
+
+  const preview = document.getElementById("preview");
+  const image = document.createElement("img");
+  image.src = img;
+  image.style.width = "100px";
+
+  preview.appendChild(image);
+}
