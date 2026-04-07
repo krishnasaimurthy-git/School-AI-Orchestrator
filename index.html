@@ -1,51 +1,66 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>School Scanner</title>
-
-  <link rel="manifest" href="manifest.json">
-
-  <!-- Libraries -->
-  <script src="https://docs.opencv.org/4.x/opencv.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-  <style>
-    body { font-family: Arial; text-align: center; }
-    video, canvas { width: 95%; margin: 10px; }
-    button { padding: 10px; margin: 5px; }
-  </style>
-</head>
-
 <body>
 
-<h3>School Essay Scanner</h3>
+<!-- PAGE 1: AUTH -->
+<div id="page-auth" class="page active">
+  <h2>User Authentication</h2>
 
-<video id="video" autoplay playsinline></video>
-<canvas id="canvas"></canvas>
+  <label>User Type:</label>
+  <select id="userType">
+    <option value="">Select</option>
+    <option value="tcs">TCS</option>
+    <option value="agency">Agency</option>
+    <option value="school">School Authority</option>
+  </select>
 
-<br>
+  <div id="schoolRole" style="display:none;">
+    <label>Designation:</label>
+    <select id="designation">
+      <option>Principal</option>
+      <option>Coordinator</option>
+    </select>
+  </div>
 
-<button onclick="startCamera()">Start Camera</button>
-<button onclick="capture()">Capture</button>
-<button onclick="processScan()">Process</button>
-<button onclick="runOCR()">OCR</button>
-<button onclick="generatePDF()">Export PDF</button>
+  <button onclick="goToPage('page-school')">Next</button>
+</div>
 
-<p id="status"></p>
 
-<script src="app.js"></script>
-<script src="scanner.js"></script>
-<script src="ocr.js"></script>
-<script src="pdf.js"></script>
+<!-- PAGE 2: SCHOOL INFO -->
+<div id="page-school" class="page">
+  <h2>School Information</h2>
 
-<script>
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js');
-}
-</script>
+  <input placeholder="School Name" id="schoolName"/>
+  <input placeholder="UDISE Code" id="udise"/>
+  <input placeholder="City" id="city"/>
+  <input placeholder="State" id="state"/>
+
+  <button onclick="goBack('page-auth')">Back</button>
+  <button onclick="goToPage('page-scan')">Next</button>
+</div>
+
+
+<!-- PAGE 3: SCAN -->
+<div id="page-scan" class="page">
+  <h2>Scan Documents</h2>
+
+  <video id="camera" autoplay></video>
+  <button onclick="startCamera()">Open Camera</button>
+  <button onclick="capture()">Scan</button>
+
+  <div id="preview"></div>
+
+  <button onclick="goBack('page-school')">Back</button>
+  <button onclick="goToPage('page-final')">Next</button>
+</div>
+
+
+<!-- PAGE 4: FINAL -->
+<div id="page-final" class="page">
+  <h2>Preview & Submit</h2>
+
+  <div id="finalPreview"></div>
+
+  <button onclick="goBack('page-scan')">Back</button>
+  <button onclick="submitData()">Submit</button>
+</div>
 
 </body>
-</html>
