@@ -1,36 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <style>
-    .page {
-      display: none;
-    }
+<title>School Scanner</title>
 
-    .page.active {
-      display: block;
-    }
-  </style>
+<style>
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto;
+    background: #000;
+    color: #fff;
+  }
 
+  .app {
+    max-width: 420px;
+    margin: auto;
+    min-height: 100vh;
+    background: #000;
+  }
+
+  .header {
+    padding: 15px;
+    font-size: 18px;
+    font-weight: bold;
+    border-bottom: 1px solid #222;
+  }
+
+  .page {
+    display: none;
+    padding: 20px;
+  }
+
+  .page.active {
+    display: block;
+    animation: fade 0.3s ease;
+  }
+
+  @keyframes fade {
+    from {opacity: 0; transform: translateX(10px);}
+    to {opacity: 1;}
+  }
+
+  input, select {
+    width: 100%;
+    padding: 12px;
+    margin-top: 12px;
+    border-radius: 8px;
+    border: 1px solid #333;
+    background: #111;
+    color: white;
+  }
+
+  button {
+    width: 100%;
+    padding: 14px;
+    margin-top: 15px;
+    border-radius: 30px;
+    border: none;
+    background: #1d9bf0;
+    color: white;
+    font-size: 15px;
+    font-weight: bold;
+  }
+
+  button.secondary {
+    background: #222;
+  }
+
+  .row {
+    display: flex;
+    gap: 10px;
+  }
+
+  video {
+    width: 100%;
+    border-radius: 12px;
+    margin-top: 15px;
+  }
+
+  #preview {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    margin-top: 10px;
+  }
+
+  #preview img {
+    width: 90px;
+    border-radius: 8px;
+  }
+
+  .fab {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #1d9bf0;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    font-size: 28px;
+    border: none;
+  }
+</style>
 </head>
 
 <body>
 
-<!-- PAGE 1: AUTH -->
-<div id="page-auth" class="page active">
-  <h2>User Authentication</h2>
+<div class="app">
 
-  <label>User Type:</label>
+<!-- PAGE 1 -->
+<div id="page-auth" class="page active">
+  <div class="header">User Authentication</div>
+
   <select id="userType">
-    <option value="">Select</option>
+    <option value="">Select User Type</option>
     <option value="tcs">TCS</option>
     <option value="agency">Agency</option>
     <option value="school">School Authority</option>
   </select>
 
   <div id="schoolRole" style="display:none;">
-    <label>Designation:</label>
-    <select id="designation">
+    <select>
       <option>Principal</option>
       <option>Coordinator</option>
     </select>
@@ -40,43 +132,103 @@
 </div>
 
 
-<!-- PAGE 2: SCHOOL INFO -->
+<!-- PAGE 2 -->
 <div id="page-school" class="page">
-  <h2>School Information</h2>
+  <div class="header">School Information</div>
 
-  <input placeholder="School Name" id="schoolName"/>
-  <input placeholder="UDISE Code" id="udise"/>
-  <input placeholder="City" id="city"/>
-  <input placeholder="State" id="state"/>
+  <input placeholder="School Name">
+  <input placeholder="UDISE Code">
+  <input placeholder="City">
+  <input placeholder="State">
 
-  <button onclick="goBack('page-auth')">Back</button>
-  <button onclick="goToPage('page-scan')">Next</button>
+  <div class="row">
+    <button class="secondary" onclick="goToPage('page-auth')">Back</button>
+    <button onclick="goToPage('page-scan')">Next</button>
+  </div>
 </div>
 
 
-<!-- PAGE 3: SCAN -->
+<!-- PAGE 3 -->
 <div id="page-scan" class="page">
-  <h2>Scan Documents</h2>
+  <div class="header">Scan Documents</div>
 
   <video id="camera" autoplay></video>
+
   <button onclick="startCamera()">Open Camera</button>
   <button onclick="capture()">Scan</button>
 
   <div id="preview"></div>
 
-  <button onclick="goBack('page-school')">Back</button>
-  <button onclick="goToPage('page-final')">Next</button>
+  <div class="row">
+    <button class="secondary" onclick="goToPage('page-school')">Back</button>
+    <button onclick="goToPage('page-final')">Next</button>
+  </div>
 </div>
 
 
-<!-- PAGE 4: FINAL -->
+<!-- PAGE 4 -->
 <div id="page-final" class="page">
-  <h2>Preview & Submit</h2>
+  <div class="header">Preview & Submit</div>
 
   <div id="finalPreview"></div>
 
-  <button onclick="goBack('page-scan')">Back</button>
-  <button onclick="submitData()">Submit</button>
+  <div class="row">
+    <button class="secondary" onclick="goToPage('page-scan')">Back</button>
+    <button onclick="submitData()">Submit</button>
+  </div>
 </div>
 
+</div>
+
+<!-- FLOAT BUTTON -->
+<button class="fab" onclick="capture()">+</button>
+
+<script>
+function goToPage(pageId) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(pageId).classList.add('active');
+}
+
+document.getElementById("userType").addEventListener("change", function () {
+  document.getElementById("schoolRole").style.display =
+    this.value === "school" ? "block" : "none";
+});
+
+let stream;
+
+async function startCamera() {
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: "environment" }
+    });
+    document.getElementById("camera").srcObject = stream;
+  } catch (e) {
+    alert("Camera error: " + e.message);
+  }
+}
+
+function capture() {
+  const video = document.getElementById("camera");
+  const canvas = document.createElement("canvas");
+
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(video, 0, 0);
+
+  const img = canvas.toDataURL("image/jpeg");
+
+  const image = document.createElement("img");
+  image.src = img;
+
+  document.getElementById("preview").appendChild(image);
+}
+
+function submitData() {
+  alert("Submitted Successfully ✅");
+}
+</script>
+
 </body>
+</html>
